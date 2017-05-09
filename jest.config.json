@@ -1,9 +1,0 @@
-{
-  "transform": {".*": "<rootDir>/jest.transform.js"},
-  "moduleFileExtensions": [
-    "js",
-    "json",
-    "jsx"
-  ]
-},
-
