@@ -12,14 +12,28 @@
   "scripts": {
     "build": "nwb build-web-module",
     "clean": "nwb clean-module",
-    "test": "nwb test",
-    "test:coverage": "nwb test --coverage",
-    "test:watch": "nwb test --server"
+    "#COMMENT1": "tests using jest: https://gist.github.com/RakanNimer/f31c0178243e4f1d402546d41e7d7dcd",
+    "test": "jest",
+    "test:nwb": "nwb test",
+    "test:nwb:coverage": "nwb test --coverage",
+    "test:nwb:watch": "nwb test --server"
   },
-  "dependencies": {
+  "jest": {
+    "transform": {".*": "<rootDir>/node_modules/babel-jest"},
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "jsx"
+    ]
   },
+  "dependencies": {},
   "devDependencies": {
-    "nwb": "0.15.x"
+    "babel-jest": "^20.0.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "jest": "^20.0.0",
+    "nwb": "0.15.x",
+    "react-test-renderer": "^15.5.4"
   },
   "author": "",
   "homepage": "",

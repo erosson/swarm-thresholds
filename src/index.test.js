@@ -1,6 +1,6 @@
 import expect from 'expect'
 
-import message from 'src/index'
+import message from './index'
 
 describe('Module template', () => {
   it('displays a welcome message', () => {
