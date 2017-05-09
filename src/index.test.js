@@ -1,9 +1,71 @@
-import expect from 'expect'
+import {StatValue} from './index'
+import Decimal from 'decimal.js'
 
-import message from './index'
-
-describe('Module template', () => {
-  it('displays a welcome message', () => {
-    expect(message).toContain('Welcome to swarm-thresholds')
+describe('StatValue', () => {
+  it('inits', () => {
+    const stat = new StatValue(0, (total, next) => total + next)
+    expect(stat.value).toEqual(0)
+    stat.update(10)
+    expect(stat.value).toEqual(10)
+    stat.update(15)
+    expect(stat.value).toEqual(25)
+  })
+  it('has builtin reducers: add', () => {
+    const stat = new StatValue(0, 'add')
+    expect(stat.value).toEqual(0)
+    stat.update(10)
+    expect(stat.value).toEqual(10)
+    stat.update(15)
+    expect(stat.value).toEqual(25)
+  })
+  it('has builtin reducers: max', () => {
+    const stat = new StatValue(0, 'max')
+    expect(stat.value).toEqual(0)
+    stat.update(10)
+    expect(stat.value).toEqual(10)
+    stat.update(15)
+    expect(stat.value).toEqual(15)
+    stat.update(5)
+    expect(stat.value).toEqual(15)
+  })
+  it('has builtin reducers: max', () => {
+    const stat = new StatValue(999, 'min')
+    expect(stat.value).toEqual(999)
+    stat.update(10)
+    expect(stat.value).toEqual(10)
+    stat.update(15)
+    expect(stat.value).toEqual(10)
+    stat.update(5)
+    expect(stat.value).toEqual(5)
+  })
+  it('has builtin reducers: decimal.add', () => {
+    const stat = new StatValue(Decimal(0), 'decimal.add')
+    expect(stat.value).toEqual(Decimal(0))
+    stat.update(10)
+    expect(stat.value).toEqual(Decimal(10))
+    stat.update('15')
+    expect(stat.value).toEqual(Decimal(25))
+    stat.update(Decimal(5))
+    expect(stat.value).toEqual(Decimal(30))
+  })
+  it('has builtin reducers: decimal.max', () => {
+    const stat = new StatValue(Decimal(0), 'decimal.max')
+    expect(stat.value).toEqual(Decimal(0))
+    stat.update(10)
+    expect(stat.value).toEqual(Decimal(10))
+    stat.update('15')
+    expect(stat.value).toEqual(Decimal(15))
+    stat.update(Decimal(5))
+    expect(stat.value).toEqual(Decimal(15))
+  })
+  it('has builtin reducers: decimal.min', () => {
+    const stat = new StatValue(Decimal(999), 'decimal.min')
+    expect(stat.value).toEqual(Decimal(999))
+    stat.update(10)
+    expect(stat.value).toEqual(Decimal(10))
+    stat.update('15')
+    expect(stat.value).toEqual(Decimal(10))
+    stat.update(Decimal(5))
+    expect(stat.value).toEqual(Decimal(5))
   })
 })
