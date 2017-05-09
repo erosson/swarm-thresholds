@@ -12,20 +12,15 @@
   "scripts": {
     "build": "nwb build-web-module",
     "clean": "nwb clean-module",
+    "preversion": "yarn run build",
     "#COMMENT1": "tests using jest: https://gist.github.com/RakanNimer/f31c0178243e4f1d402546d41e7d7dcd",
-    "test": "jest --watch",
-    "1test": "jest",
+    "1test": "jest --config jest.config.js --no-cache",
+    "test": "yarn run 1test -- --watch",
+    "preversion": "yarn run 1test",
+    "version": "yarn run build && git add -A dist",
     "test:nwb": "nwb test",
     "test:nwb:coverage": "nwb test --coverage",
     "test:nwb:watch": "nwb test --server"
-  },
-  "jest": {
-    "transform": {".*": "<rootDir>/node_modules/babel-jest"},
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "jsx"
-    ]
   },
   "dependencies": {},
   "devDependencies": {
