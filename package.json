@@ -13,7 +13,7 @@
     "build": "nwb build-web-module",
     "clean": "nwb clean-module",
     "#COMMENT1": "tests using jest: https://gist.github.com/RakanNimer/f31c0178243e4f1d402546d41e7d7dcd",
-    "test": "jest",
+    "test": "jest --watch",
     "test:nwb": "nwb test",
     "test:nwb:coverage": "nwb test --coverage",
     "test:nwb:watch": "nwb test --server"
