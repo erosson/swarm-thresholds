@@ -43,7 +43,7 @@ export class Threshold {
 
 export default class ImmutableStat {
   constructor(selector, type, thresholds) {
-    this._selector = _.iteratee(selector)
+    this._selector = _.isFunction(selector) ? selector : s => _.get(s, selector)
     this._type = types[type] || type || types.max
     this._thresholds = thresholds || new Stack()
   }

@@ -9,7 +9,7 @@ describe('MutableSchema', () => {
       bar: new ImmutableStat('my.bar', 'decimal.max'),
       baz: new ImmutableStat('my.baz', 'min'),
     })
-    let done = false
+    let done = null
     schema.thresholds({
       quotas: {
         foo: 10,
@@ -21,7 +21,7 @@ describe('MutableSchema', () => {
         foo: 20,
         bar: Decimal(20),
       },
-      onComplete: () => {done = true},
+      onComplete() {done = this.name},
       name: 'twoten',
     })
     expect(schema.check({my:{foo:5, bar: 5}}).map(t=>t.name)).toEqual([])
@@ -34,10 +34,10 @@ describe('MutableSchema', () => {
     expect(schema.check({my:{foo:10, bar: 10}}).map(t=>t.name)).toEqual([])
     expect(schema.check({my:{foo:10, bar: 10}}).map(t=>t.name)).toEqual([])
     // onComplete callback (only for mutables; immutables stay pure!)
-    expect(done).toEqual(false)
+    expect(done).toEqual(null)
     expect(schema.check({my:{foo:20, bar: 10}}).map(t=>t.name)).toEqual([])
-    expect(done).toEqual(false)
+    expect(done).toEqual(null)
     expect(schema.check({my:{foo:20, bar: 20}}).map(t=>t.name)).toEqual(['twoten'])
-    expect(done).toEqual(true)
+    expect(done).toEqual('twoten')
   })
 })

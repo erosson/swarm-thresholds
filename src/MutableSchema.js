@@ -25,7 +25,7 @@ export default class MutableSchema {
         onComplete = [onComplete]
       }
       for (let fn of onComplete) {
-        fn(thresh)
+        fn.call(thresh, thresh)
       }
     }
     return completed
