@@ -2,14 +2,6 @@ import {StatValue} from './index'
 import Decimal from 'decimal.js'
 
 describe('StatValue', () => {
-  it('inits', () => {
-    const stat = new StatValue(0, (total, next) => total + next)
-    expect(stat.value).toEqual(0)
-    stat.update(10)
-    expect(stat.value).toEqual(10)
-    stat.update(15)
-    expect(stat.value).toEqual(25)
-  })
   it('has builtin reducers: add', () => {
     const stat = new StatValue(0, 'add')
     expect(stat.value).toEqual(0)
@@ -67,5 +59,13 @@ describe('StatValue', () => {
     expect(stat.value).toEqual(Decimal(10))
     stat.update(Decimal(5))
     expect(stat.value).toEqual(Decimal(5))
+  })
+
+  it('returns completed thresholds on update, exactly once', () => {
+    const stat = new StatValue(0, 'max')
+    const thresh = stat.threshold(10)
+    expect(stat.update(9)).toEqual([])
+    expect(stat.update(10)).toEqual([thresh])
+    expect(stat.update(11)).toEqual([])
   })
 })
