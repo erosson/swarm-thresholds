@@ -1,17 +1,9 @@
 import _ from 'lodash'
 import {Stack} from 'immutable'
 
-export class Threshold {
-  constructor(stat, {quota, params}) {
-    this.stat = stat
-    this.quota = quota
-    this.params = params
-  }
-}
-
 const types = {
   max: {
-    percent(total, quota) {return total / quota},
+    percent(total, quota) {return Math.min(1, Math.max(0, total / quota))},
     isComplete(total, quota) {return total >= quota},
     comparator(a, b) {return a - b},
   },
@@ -24,16 +16,29 @@ const types = {
   // Don't actually depend on decimal.js, to keep the library small for non-
   // decimal consumers. Instead, use the decimal passed as a param.
   'decimal.max': {
-    percent(total, quota) {return total.dividedBy(quota)},
-    isComplete(total, quota) {return total.gte(quota)},
+    percent(total, quota) {return quota.constructor.min(1, quota.constructor.max(0, new quota.constructor(total).dividedBy(quota)))},
+    isComplete(total, quota) {return new quota.constructor(total).gte(quota)},
     comparator(a, b, ctor=i=>i) {return ctor(a).cmp(b)},
   },
   'decimal.min': {
-    isComplete(total, quota) {return total.lte(quota)},
+    isComplete(total, quota) {return new quota.constructor(total).lte(quota)},
     // percent-cmplete doesn't make sense for min
     percent(total, quota) {return null},
     comparator(a, b, ctor=i=>i) {return ctor(b).cmp(a)},
   },
+}
+
+export class Threshold {
+  constructor(stat, thresh) {
+    this.stat = stat
+    this.thresh = thresh
+  }
+  percent(state) {
+    return this.stat.percent(this.thresh, state)
+  }
+  isComplete(state) {
+    return this.stat.isComplete(this.thresh, state)
+  }
 }
 
 export default class ImmutableStat {
@@ -61,6 +66,13 @@ export default class ImmutableStat {
   thresholds(...threshes) {
     return this.thresholdList(threshes)
   }
+  // Check a specific threshold's status.
+  isComplete(thresh, state) {
+    return this._type.isComplete(this.value(state), thresh.quota)
+  }
+  percent(thresh, state) {
+    return this._type.percent(this.value(state), thresh.quota)
+  }
   // check threshold status.
   // The pattern: `const thresholds = stat.check(state); stat = stat.pop(thresholds);``
   value(state) {
@@ -68,7 +80,7 @@ export default class ImmutableStat {
   }
   check(state) {
     const val = this.value(state)
-    return this._thresholds.takeWhile(({quota}) => this._type.comparator(val, quota, quota.constructor) >= 0).toArray()
+    return this._thresholds.takeWhile(({quota}) => this._type.isComplete(val, quota)).toArray()
   }
   pop(checked) {
     return new ImmutableStat(this._selector, this._type, this._thresholds.skip(checked.length))

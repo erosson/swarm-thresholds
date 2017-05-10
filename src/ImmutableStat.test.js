@@ -12,7 +12,7 @@ describe('ImmutableStat', () => {
     expect(stat.value({foo: {bar: [{baz: 3}]}})).toEqual(3)
     expect(stat.value({})).toEqual(undefined)
   })
-  it('finds thresholds', () => {
+  it('checks thresholds', () => {
     const stat = new ImmutableStat(i => i)
     stat.thresholds(
       {quota: 10, name: 'ten'},
@@ -28,7 +28,7 @@ describe('ImmutableStat', () => {
     expect(stat.pop(stat.check(5)).check(5).map(t=>t.name)).toEqual([])
     expect(stat.pop(stat.check(5)).check(10).map(t=>t.name)).toEqual(['ten'])
   })
-  it('finds min thresholds', () => {
+  it('checks min thresholds', () => {
     const stat = new ImmutableStat(i => i, 'min')
     stat.thresholds(
       {quota: 10, name: 'ten'},
@@ -47,7 +47,7 @@ describe('ImmutableStat', () => {
     expect(stat.pop(stat.check(20)).check(20).map(t=>t.name)).toEqual([])
     expect(stat.pop(stat.check(20)).check(10).map(t=>t.name)).toEqual(['ten'])
   })
-  it('finds decimal.js thresholds', () => {
+  it('checks decimal.js thresholds', () => {
     const stat = new ImmutableStat(i => i, 'decimal.max')
     stat.thresholds(
       {quota: Decimal(10), name: 'ten'},
@@ -67,7 +67,7 @@ describe('ImmutableStat', () => {
     expect(stat.pop(stat.check(5)).check(5).map(t=>t.name)).toEqual([])
     expect(stat.pop(stat.check(5)).check(10).map(t=>t.name)).toEqual(['ten'])
   })
-  it('finds decimal.js min thresholds', () => {
+  it('checks decimal.js min thresholds', () => {
     const stat = new ImmutableStat(i => i, 'decimal.min')
     stat.thresholds(
       {quota: Decimal(10), name: 'ten'},
@@ -87,5 +87,23 @@ describe('ImmutableStat', () => {
     expect(stat.check(0).map(t=>t.name)).toEqual(['twoten', 'ten', 'halften'])
     expect(stat.pop(stat.check(20)).check(20).map(t=>t.name)).toEqual([])
     expect(stat.pop(stat.check(20)).check(10).map(t=>t.name)).toEqual(['ten'])
+  })
+  it('returns threshold objects', () => {
+    const stat = new ImmutableStat(i => i)
+    const thresh = stat.threshold({quota: 10, name: 'ten'})
+    expect(thresh.isComplete(0)).toEqual(false)
+    expect(thresh.isComplete(9.99)).toEqual(false)
+    expect(thresh.isComplete(10)).toEqual(true)
+    expect(thresh.isComplete(11)).toEqual(true)
+    expect(thresh.percent(0)).toEqual(0)
+    expect(thresh.percent(5)).toEqual(0.5)
+    expect(thresh.percent(10)).toEqual(1)
+    expect(thresh.percent(15)).toEqual(1)
+    expect(thresh.percent(-5)).toEqual(0)
+  })
+  it('avoids circular references', () => {
+    const stat = new ImmutableStat(i => i)
+    stat.threshold({quota: 10, name: 'ten'})
+    expect(() => JSON.stringify(stat)).not.toThrow()
   })
 })
