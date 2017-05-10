@@ -16,7 +16,8 @@
     "#COMMENT1": "tests using jest: https://gist.github.com/RakanNimer/f31c0178243e4f1d402546d41e7d7dcd",
     "1test": "jest",
     "test": "jest --watch",
-    "version": "yarn run build && git add -A dist",
+    "preversion": "yarn run 1test",
+    "version": "yarn run build",
     "test:nwb": "nwb test",
     "test:nwb:coverage": "nwb test --coverage",
     "test:nwb:watch": "nwb test --server"
