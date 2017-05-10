@@ -22,21 +22,21 @@ describe('ImmutableSchema', () => {
       },
       name: 'twoten',
     })
-    expect(schema.check({my:{foo:5, bar: 5}}).completed.map(t=>t.name)).toEqual([])
-    expect(schema.check({my:{foo:10, bar: 5}}).completed.map(t=>t.name)).toEqual([])
-    expect(schema.check({my:{foo:5, bar: 10}}).completed.map(t=>t.name)).toEqual([])
-    expect(schema.check({my:{foo:10, bar: 10}}).completed.map(t=>t.name)).toEqual(['ten'])
+    expect(schema.check(null, {my:{foo:5, bar: 5}}).completed.map(t=>t.name)).toEqual([])
+    expect(schema.check(null, {my:{foo:10, bar: 5}}).completed.map(t=>t.name)).toEqual([])
+    expect(schema.check(null, {my:{foo:5, bar: 10}}).completed.map(t=>t.name)).toEqual([])
+    expect(schema.check(null, {my:{foo:10, bar: 10}}).completed.map(t=>t.name)).toEqual(['ten'])
     // Caller can restrict the stats that are checked, for efficiency.
     // (Swarmsim example: no need to check hive-queen achievements when buying a drone.)
-    expect(schema.check({my:{foo:10, bar: 10}}, ['foo']).completed.map(t=>t.name)).toEqual(['ten'])
-    expect(schema.check({my:{foo:10, bar: 10}}, ['bar']).completed.map(t=>t.name)).toEqual(['ten'])
-    expect(schema.check({my:{foo:10, bar: 5}}, ['foo']).completed.map(t=>t.name)).toEqual([])
-    // check()/pop() are similar to the ImmutableStat versions.
-    expect(schema.pop(schema.check({my:{foo:10, bar: 10}})).check({my:{foo:10, bar: 10}}).completed.map(t=>t.name)).toEqual([])
-    expect(schema.pop(schema.check({my:{foo:10, bar: 5}})).check({my:{foo:10, bar: 10}}).completed.map(t=>t.name)).toEqual(['ten'])
-    expect(schema.pop(schema.check({my:{foo:10, bar: 10}})).check({my:{foo:20, bar: 10}}).completed.map(t=>t.name)).toEqual([])
-    expect(schema.pop(schema.check({my:{foo:10, bar: 10}})).check({my:{foo:20, bar: 20}}).completed.map(t=>t.name)).toEqual(['twoten'])
-    expect(schema.pop(schema.check({my:{foo:10, bar: 5}})).check({my:{foo:20, bar: 20}}).completed.map(t=>t.name)).toEqual(['twoten', 'ten'])
+    expect(schema.check(null, {my:{foo:10, bar: 10}}, ['foo']).completed.map(t=>t.name)).toEqual(['ten'])
+    expect(schema.check(null, {my:{foo:10, bar: 10}}, ['bar']).completed.map(t=>t.name)).toEqual(['ten'])
+    expect(schema.check(null, {my:{foo:10, bar: 5}}, ['foo']).completed.map(t=>t.name)).toEqual([])
+    // check()'s first arg is similar to the ImmutableStat version.
+    expect(schema.check(schema.check(null, {my:{foo:10, bar: 10}}).next, {my:{foo:10, bar: 10}}).completed.map(t=>t.name)).toEqual([])
+    expect(schema.check(schema.check(null, {my:{foo:10, bar: 5}}).next, {my:{foo:10, bar: 10}}).completed.map(t=>t.name)).toEqual(['ten'])
+    expect(schema.check(schema.check(null, {my:{foo:10, bar: 10}}).next, {my:{foo:20, bar: 10}}).completed.map(t=>t.name)).toEqual([])
+    expect(schema.check(schema.check(null, {my:{foo:10, bar: 10}}).next, {my:{foo:20, bar: 20}}).completed.map(t=>t.name)).toEqual(['twoten'])
+    expect(schema.check(schema.check(null, {my:{foo:10, bar: 5}}).next, {my:{foo:20, bar: 20}}).completed.map(t=>t.name)).toEqual(['twoten', 'ten'])
   })
   it('avoids circular references', () => {
     const schema = new ImmutableSchema({

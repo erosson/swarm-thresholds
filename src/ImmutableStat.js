@@ -78,11 +78,14 @@ export default class ImmutableStat {
   value(state) {
     return this._selector(state)
   }
-  check(state) {
+  check(next0, state) {
+    next0 = next0 || 0
     const val = this.value(state)
-    return this._thresholds.takeWhile(({quota}) => this._type.isComplete(val, quota)).toArray()
+    const complete = this._thresholds.skip(next0).takeWhile(({quota}) => this._type.isComplete(val, quota)).toArray()
+    const next = next0 + complete.length
+    return {complete, next}
   }
-  pop(checked) {
-    return new ImmutableStat(this._selector, this._type, this._thresholds.skip(checked.length))
-  }
+  //bind(next) {
+  //  return state => this.check(next, state)
+  //}
 }
