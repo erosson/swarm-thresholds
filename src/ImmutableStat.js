@@ -21,7 +21,8 @@ const types = _.mapValues({
   // Don't actually depend on decimal.js, to keep the library small for non-
   // decimal consumers. Instead, use the decimal passed as a param.
   'decimal.max': {
-    percent(total, quota) {return quota.constructor.min(1, quota.constructor.max(0, new quota.constructor(total).dividedBy(quota)))},
+    // percentages are always 0 <= p <= 1, so toNumber() because we don't need decimal.js's range
+    percent(total, quota) {return quota.constructor.min(1, quota.constructor.max(0, new quota.constructor(total).dividedBy(quota))).toNumber()},
     isComplete(total, quota) {return new quota.constructor(total).gte(quota)},
     comparator(a, b, ctor=i=>i) {return ctor(a).cmp(b)},
   },
@@ -40,6 +41,9 @@ export class Threshold {
   }
   percent(state) {
     return this.stat.percent(this.thresh, state)
+  }
+  progress(state) {
+    return this.stat.progress(this.thresh, state)
   }
   isComplete(state) {
     return this.stat.isComplete(this.thresh, state)
@@ -82,6 +86,13 @@ export default class ImmutableStat {
   }
   percent(thresh, state) {
     return this._type.percent(this.value(state), thresh.quota)
+  }
+  progress(thresh, state) {
+    const value = this.value(state)
+    const quota = thresh.quota
+    const percent = this._type.percent(value, quota)
+    const isComplete = this.isComplete(thresh, state)
+    return {value, quota, percent, isComplete, type: this._type.name}
   }
   // check threshold status.
   // The pattern: `const thresholds = stat.check(state); stat = stat.pop(thresholds);``

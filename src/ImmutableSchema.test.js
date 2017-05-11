@@ -9,7 +9,7 @@ describe('ImmutableSchema', () => {
       bar: {selector: 'my.bar', type: 'decimal.max'},
       baz: {selector: 'my.baz', type: 'min'},
     })
-    schema.thresholds({
+    const [ten,twoten] = schema.thresholds({
       quotas: {
         foo: 10,
         bar: Decimal(10),
@@ -37,6 +37,14 @@ describe('ImmutableSchema', () => {
     expect(schema.check(schema.check(null, {my:{foo:10, bar: 10}}).next, {my:{foo:20, bar: 10}}).completed.map(t=>t.name)).toEqual([])
     expect(schema.check(schema.check(null, {my:{foo:10, bar: 10}}).next, {my:{foo:20, bar: 20}}).completed.map(t=>t.name)).toEqual(['twoten'])
     expect(schema.check(schema.check(null, {my:{foo:10, bar: 5}}).next, {my:{foo:20, bar: 20}}).completed.map(t=>t.name)).toEqual(['twoten', 'ten'])
+
+    expect(ten.progress({my:{foo:4, bar: 6}})).toEqual({
+      stats: {
+        'foo': {quota: 10, value: 4, percent: 0.4, isComplete: false, type: 'max'},
+        'bar': {quota: Decimal(10), value: 6, percent: 0.6, isComplete: false, type: 'decimal.max'},
+      },
+      quota: 2, value: 0, percent: 0, isComplete: false, type: 'schema',
+    })
   })
   it('supports partial-match thresholds (ex. collect 2 of 3)', () => {
     const schema = ImmutableSchema.create({

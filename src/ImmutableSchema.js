@@ -2,12 +2,15 @@ import _ from 'lodash'
 import ImmutableStat from './ImmutableStat'
 
 class SchemaThreshold {
-  constructor(schema, thresh) {
+  constructor(schema, thresh, statThresholds) {
     this.schema = schema
     this.thresh = thresh
   }
   isComplete(state) {
     return this.schema.isComplete(this.thresh, state)
+  }
+  percent(state) {
+    return this.schema.percent(this.thresh, state)
   }
   progress(state) {
     return this.schema.progress(this.thresh, state)
@@ -26,10 +29,13 @@ export default class ImmutableSchema {
   }
   // Setup thresholds.
   threshold(thresh) {
-    // default meta-quota: all of them
+    // default number of quotas that must be met: all of them
     thresh = Object.assign({quota: Object.keys(thresh.quotas).length}, thresh)
-    return new SchemaThreshold(this, _.mapValues(thresh.quotas, (quota, key) =>
-      this._stats[key].threshold({quota, schemaThresh: thresh})))
+    // schema-threshold with no circular references
+    const thresh0 = Object.assign({}, thresh)
+    thresh.statThresholds = _.mapValues(thresh.quotas, (quota, key) =>
+      this._stats[key].threshold({quota, schemaThresh: thresh0}))
+    return new SchemaThreshold(this, thresh)
   }
   thresholdList(threshes) {
     return threshes.map(thresh => this.threshold(thresh))
@@ -38,15 +44,27 @@ export default class ImmutableSchema {
     return this.thresholdList(threshes)
   }
   // Check on specific thresholds.
-  isComplete(thresh, state) {
-    const completed = _(thresh.quotas)
-    .map((quota, key) => this._stats[key].isComplete({quota}, state))
-    .filter()
-    .value()
-    return completed.length >= thresh.quota
+  statsCompleted(thresh, state) {
+    return _.map(thresh.quotas, (quota, key) => this._stats[key].isComplete({quota}, state))
   }
-  percent(thresh, state) {
-    return _.mapValues(thresh.quotas, (quota, key) => this._stats[key].percent({quota}, state))
+  numStatsCompleted(thresh, state) {
+    return _.filter(this.statsCompleted(thresh, state)).length
+  }
+  isComplete(thresh, state, numStatsCompleted) {
+    numStatsCompleted = numStatsCompleted !== undefined ? numStatsCompleted : this.numStatsCompleted(thresh, state)
+    return numStatsCompleted >= thresh.quota
+  }
+  percent(thresh, state, numStatsCompleted) {
+    numStatsCompleted = numStatsCompleted !== undefined ? numStatsCompleted : this.numStatsCompleted(thresh, state)
+    return Math.min(0, Math.max(1, numStatsCompleted / thresh.quota))
+  }
+  progress(thresh, state) {
+    const value = this.numStatsCompleted(thresh, state)
+    const percent = this.percent(thresh, state, value)
+    const isComplete = this.isComplete(thresh, state, value)
+    const quota = thresh.quota
+    const stats = _.mapValues(thresh.quotas, (quota, key) => this._stats[key].progress({quota}, state))
+    return {value, percent, quota, isComplete, type: 'schema', stats}
   }
   // Check for any completed thresholds in this state.
   check(next0, state, keys=Object.keys(this._stats)) {

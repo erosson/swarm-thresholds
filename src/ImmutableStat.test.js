@@ -116,6 +116,7 @@ describe('ImmutableStat', () => {
     expect(thresh.percent(10)).toEqual(1)
     expect(thresh.percent(15)).toEqual(1)
     expect(thresh.percent(-5)).toEqual(0)
+    expect(thresh.progress(4)).toEqual({quota:10, value:4, percent: 0.4, isComplete: false, type: 'max'})
   })
   it('avoids circular references', () => {
     const stat = new ImmutableStat(i => i)
