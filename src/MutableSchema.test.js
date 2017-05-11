@@ -4,10 +4,10 @@ import Decimal from 'decimal.js'
 
 describe('MutableSchema', () => {
   it('works', () => {
-    const schema = new MutableSchema({
-      foo: new ImmutableStat('my.foo'),
-      bar: new ImmutableStat('my.bar', 'decimal.max'),
-      baz: new ImmutableStat('my.baz', 'min'),
+    const schema = MutableSchema.create({
+      foo: {selector: 'my.foo'},
+      bar: {selector: 'my.bar', type: 'decimal.max'},
+      baz: {selector: 'my.baz', type: 'min'},
     })
     let done = null
     schema.thresholds({

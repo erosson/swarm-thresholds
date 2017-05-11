@@ -56,7 +56,12 @@ export default class ImmutableStat {
   // is simpler than threshold-checking, only happens once, at startup, and is
   // more convenient with mutability.
   thresholdList(threshes) {
-    console.assert(this._type.name === 'bool' || !_.some(threshes, thresh => thresh.quota === undefined), 'threshold must have a quota')
+    if (this._type.name === 'bool') {
+      // but undefined is okay, because we assume true
+      if (_.some(threshes, thresh => !thresh.quota && thresh.quota !== undefined)) throw new Error('bool threshold cannot be false')
+    } else {
+      if (_.some(threshes, thresh => thresh.quota === undefined)) throw new Error('threshold must have a quota')
+    }
     // A priority queue/heap would be the ideal data structure here, but
     // immutble.js doesn't have those. Sorting after every threshold push is
     // slower than necessary, but not enough to write my own pqueue - thresholds

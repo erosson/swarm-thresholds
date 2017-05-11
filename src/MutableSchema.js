@@ -2,9 +2,12 @@ import _ from 'lodash'
 import ImmutableSchema from './ImmutableSchema'
 
 export default class MutableSchema {
-  constructor(stats) {
-    this._schema = new ImmutableSchema(stats)
+  constructor(ischema) {
+    this._schema = ischema
     this.next = null
+  }
+  static create(statspecs) {
+    return new MutableSchema(ImmutableSchema.create(statspecs))
   }
   // API similar to the immutable version, for the most part
   threshold(thresh) {return this._schema.threshold(thresh)}

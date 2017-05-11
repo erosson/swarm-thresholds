@@ -4,10 +4,10 @@ import Decimal from 'decimal.js'
 
 describe('ImmutableSchema', () => {
   it('checks schema-thresholds for multiple stats', () => {
-    const schema = new ImmutableSchema({
-      foo: new ImmutableStat('my.foo'),
-      bar: new ImmutableStat('my.bar', 'decimal.max'),
-      baz: new ImmutableStat('my.baz', 'min'),
+    const schema = ImmutableSchema.create({
+      foo: {selector: 'my.foo'},
+      bar: {selector: 'my.bar', type: 'decimal.max'},
+      baz: {selector: 'my.baz', type: 'min'},
     })
     schema.thresholds({
       quotas: {
@@ -38,11 +38,30 @@ describe('ImmutableSchema', () => {
     expect(schema.check(schema.check(null, {my:{foo:10, bar: 10}}).next, {my:{foo:20, bar: 20}}).completed.map(t=>t.name)).toEqual(['twoten'])
     expect(schema.check(schema.check(null, {my:{foo:10, bar: 5}}).next, {my:{foo:20, bar: 20}}).completed.map(t=>t.name)).toEqual(['twoten', 'ten'])
   })
+  it('supports partial-match thresholds (ex. collect 2 of 3)', () => {
+    const schema = ImmutableSchema.create({
+      foo: {selector: 'foo', type: 'bool'},
+      bar: {selector: 'bar', type: 'bool'},
+      baz: {selector: 'baz', type: 'bool'},
+    })
+    schema.thresholds({
+      quotas: {
+        foo: true,
+        bar: true,
+        baz: true,
+      },
+      quota: 2,
+      name: '2/3',
+    })
+    expect(schema.check(null, {foo: true, bar: true, baz: true}).completed.map(t=>t.name)).toEqual(['2/3'])
+    expect(schema.check(null, {foo: true, bar: true, baz: false}).completed.map(t=>t.name)).toEqual(['2/3'])
+    expect(schema.check(null, {foo: true, bar: false, baz: false}).completed.map(t=>t.name)).toEqual([])
+  })
   it('avoids circular references', () => {
-    const schema = new ImmutableSchema({
-      foo: new ImmutableStat('my.foo'),
-      bar: new ImmutableStat('my.bar', 'decimal.max'),
-      baz: new ImmutableStat('my.baz', 'min'),
+    const schema = ImmutableSchema.create({
+      foo: {selector: 'my.foo'},
+      bar: {selector: 'my.bar', type: 'decimal.max'},
+      baz: {selector: 'my.baz', type: 'min'},
     })
     schema.thresholds({
       quotas: {

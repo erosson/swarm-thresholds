@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import ImmutableStat from './ImmutableStat'
 
 class SchemaThreshold {
   constructor(schema, thresh) {
@@ -18,8 +19,15 @@ export default class ImmutableSchema {
   constructor(stats) {
     this._stats = stats
   }
+  static create(statspecs) {
+    return new ImmutableSchema(_.mapValues(statspecs, (statspec, key) => {
+      return new ImmutableStat(statspec.selector, statspec.type)
+    }))
+  }
   // Setup thresholds.
   threshold(thresh) {
+    // default meta-quota: all of them
+    thresh = Object.assign({quota: Object.keys(thresh.quotas).length}, thresh)
     return new SchemaThreshold(this, _.mapValues(thresh.quotas, (quota, key) =>
       this._stats[key].threshold({quota, schemaThresh: thresh})))
   }
@@ -31,7 +39,11 @@ export default class ImmutableSchema {
   }
   // Check on specific thresholds.
   isComplete(thresh, state) {
-    return !_.some(_.map(thresh.quotas, (quota, key) => !this._stats[key].isComplete({quota}, state)))
+    const completed = _(thresh.quotas)
+    .map((quota, key) => this._stats[key].isComplete({quota}, state))
+    .filter()
+    .value()
+    return completed.length >= thresh.quota
   }
   percent(thresh, state) {
     return _.mapValues(thresh.quotas, (quota, key) => this._stats[key].percent({quota}, state))

@@ -56,6 +56,12 @@ describe('ImmutableStat', () => {
     expect(stat.check(null, true).complete.map(t=>t.name)).toEqual(['thebool'])
     expect(stat.check(stat.check(null, true).next, true).complete.map(t=>t.name)).toEqual([])
     expect(stat.check(stat.check(null, false).next, true).complete.map(t=>t.name)).toEqual(['thebool'])
+    // truthy/falsy works; not strict bools
+    expect(stat.check(null, 0).complete.map(t=>t.name)).toEqual([])
+    expect(stat.check(null, 1).complete.map(t=>t.name)).toEqual(['thebool'])
+    expect(stat.check(null, null).complete.map(t=>t.name)).toEqual([])
+    expect(stat.check(null, undefined).complete.map(t=>t.name)).toEqual([])
+    expect(stat.check(null, "hi").complete.map(t=>t.name)).toEqual(['thebool'])
   })
   it('checks decimal.js thresholds', () => {
     const stat = new ImmutableStat(i => i, 'decimal.max')
