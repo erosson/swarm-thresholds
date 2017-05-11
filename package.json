@@ -1,6 +1,6 @@
 {
   "name": "swarm-thresholds",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Describe swarm-thresholds here",
   "main": "lib/index.js",
   "module": "es/index.js",
