@@ -47,6 +47,16 @@ describe('ImmutableStat', () => {
     expect(stat.check(stat.check(null, 20).next, 20).complete.map(t=>t.name)).toEqual([])
     expect(stat.check(stat.check(null, 20).next, 10).complete.map(t=>t.name)).toEqual(['ten'])
   })
+  it('checks bool thresholds', () => {
+    const stat = new ImmutableStat(i => i, 'bool')
+    stat.thresholds(
+      {name: 'thebool'},
+    )
+    expect(stat.check(null, false).complete.map(t=>t.name)).toEqual([])
+    expect(stat.check(null, true).complete.map(t=>t.name)).toEqual(['thebool'])
+    expect(stat.check(stat.check(null, true).next, true).complete.map(t=>t.name)).toEqual([])
+    expect(stat.check(stat.check(null, false).next, true).complete.map(t=>t.name)).toEqual(['thebool'])
+  })
   it('checks decimal.js thresholds', () => {
     const stat = new ImmutableStat(i => i, 'decimal.max')
     stat.thresholds(

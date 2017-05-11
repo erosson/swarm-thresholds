@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import {Stack} from 'immutable'
 
-const types = {
+const types = _.mapValues({
   max: {
     percent(total, quota) {return Math.min(1, Math.max(0, total / quota))},
     isComplete(total, quota) {return total >= quota},
@@ -12,6 +12,11 @@ const types = {
     // percent-cmplete doesn't make sense for min
     percent(total, quota) {return null},
     comparator(a, b) {return b - a},
+  },
+  bool: {
+    isComplete(total) {return !!total},
+    percent(total) {return  null},
+    comparator(a, b) {return (a?1:0) - (b?1:0)},
   },
   // Don't actually depend on decimal.js, to keep the library small for non-
   // decimal consumers. Instead, use the decimal passed as a param.
@@ -26,7 +31,7 @@ const types = {
     percent(total, quota) {return null},
     comparator(a, b, ctor=i=>i) {return ctor(b).cmp(a)},
   },
-}
+}, (obj, name) => Object.assign(obj, {name}))
 
 export class Threshold {
   constructor(stat, thresh) {
@@ -51,7 +56,7 @@ export default class ImmutableStat {
   // is simpler than threshold-checking, only happens once, at startup, and is
   // more convenient with mutability.
   thresholdList(threshes) {
-    console.assert(!_.some(threshes, thresh => thresh.quota === undefined), 'threshold must have a quota')
+    console.assert(this._type.name === 'bool' || !_.some(threshes, thresh => thresh.quota === undefined), 'threshold must have a quota')
     // A priority queue/heap would be the ideal data structure here, but
     // immutble.js doesn't have those. Sorting after every threshold push is
     // slower than necessary, but not enough to write my own pqueue - thresholds

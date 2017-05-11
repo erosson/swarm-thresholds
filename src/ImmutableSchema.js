@@ -20,7 +20,7 @@ export default class ImmutableSchema {
   }
   // Setup thresholds.
   threshold(thresh) {
-    return new SchemaThreshold(_.mapValues(thresh.quotas, (quota, key) =>
+    return new SchemaThreshold(this, _.mapValues(thresh.quotas, (quota, key) =>
       this._stats[key].threshold({quota, schemaThresh: thresh})))
   }
   thresholdList(threshes) {
