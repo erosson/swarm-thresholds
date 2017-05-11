@@ -10,6 +10,7 @@ export default class MutableSchema {
     return new MutableSchema(ImmutableSchema.create(statspecs))
   }
   // API similar to the immutable version, for the most part
+  addStats(statspecs) {this._schema.addStats(statspecs)}
   threshold(thresh) {return this._schema.threshold(thresh)}
   thresholdList(threshes) {return this._schema.thresholdList(threshes)}
   thresholds(...threshes) {return this._schema.thresholdList(threshes)}

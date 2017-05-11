@@ -19,13 +19,17 @@ class SchemaThreshold {
 
 // Thresholds for groups of ImmutableStats.
 export default class ImmutableSchema {
-  constructor(stats) {
+  constructor(stats={}) {
     this._stats = stats
   }
   static create(statspecs) {
-    return new ImmutableSchema(_.mapValues(statspecs, (statspec, key) => {
-      return new ImmutableStat(statspec.selector, statspec.type)
-    }))
+    return new ImmutableSchema().addStats(statspecs)
+  }
+  addStats(statspecs) {
+    this._stats = Object.assign(this._stats, _.mapValues(statspecs, (statspec, key) =>
+      new ImmutableStat(statspec.selector, statspec.type)
+    ))
+    return this
   }
   // Setup thresholds.
   threshold(thresh) {
