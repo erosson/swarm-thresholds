@@ -51,17 +51,17 @@ export default class ImmutableSchema {
   // Check for any completed thresholds in this state.
   check(next0, state, keys=Object.keys(this._stats)) {
     // Results of individual stat checks. We get a schemaThresh here if *any* of its stat-thresholds are met...
-    const rets = _(keys).keyBy().mapValues(key => {
+    const statsCompleted = _(keys).keyBy().mapValues(key => {
       const statnext = _.get(next0, key, null)
       return this._stats[key].check(statnext, state)
     }).value()
     // ...and always return the next-state from the individual stat-checks...
-    const next = _.mapValues(rets, 'next')
+    const next = _.mapValues(statsCompleted, 'next')
     // ...but only return the completed schema-threshold if *all* of that schema-threshold's stat-thresholds are met.
-    const statCompleted = _.flatMap(rets, 'complete')
-    const completed = _.uniq(_.filter(_.map(statCompleted, ({schemaThresh}) => {
+    const statList = _.flatMap(statsCompleted, 'complete')
+    const completed = _.uniq(_.filter(_.map(statList, ({schemaThresh}) => {
       return schemaThresh && this.isComplete(schemaThresh, state) ? schemaThresh : null
     })))
-    return {completed, next}
+    return {completed, statsCompleted, next}
   }
 }
